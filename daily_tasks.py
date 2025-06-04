@@ -136,41 +136,22 @@ class TaskApp:
                 lbl = self.create_label(row, label_text, cat)
                 lbl.pack(side="left", padx=8)
 
-        # 突發區 / 主線 / 支線
+        # 突發區 / 主線 / 支線（主題 + 子任務同一行）
         for cat in ["突發區", "主線任務", "支線任務"]:
             self.add_section_title(cat)
             groups = self.data["tasks"].get(cat, {})
             for topic, subtasks in groups.items():
-                # 主題區塊
-                topic_frame = tk.Frame(self.root, bg=BG_COLOR)
-                topic_frame.pack(anchor="w", fill="x", padx=30, pady=4)
-
-                topic_lbl = tk.Label(topic_frame, text=f"{topic}：", font=FONT_BOLD, bg=BG_COLOR, fg=TOPIC_COLOR, cursor="hand2")
-                topic_lbl.pack(anchor="w")
+                topic_row = tk.Frame(self.root, bg=BG_COLOR)
+                topic_row.pack(anchor="w", padx=30, pady=4)
+                topic_lbl = tk.Label(topic_row, text=f"{topic}：", font=FONT_BOLD, bg=BG_COLOR, fg=TOPIC_COLOR, cursor="hand2")
+                topic_lbl.pack(side="left")
                 topic_lbl.bind("<Button-1>", lambda e, t=topic, c=cat: self.handle_topic_click(t, c))
-
-                # 每個子任務都換行顯示
-                task_grid = tk.Frame(topic_frame, bg=BG_COLOR)
-                task_grid.pack(anchor="w", fill="x")
-                max_width = 1000  # 最大寬度（你可依照視窗寬度調整）
-                row_idx = 0
-                col_idx = 0
-                current_width = 0
 
                 for sub in subtasks:
                     name = sub["task"] if isinstance(sub, dict) else sub
-                    lbl = self.create_label(task_grid, name, cat, t=topic)
-                    lbl.update_idletasks()  # 確保可以正確抓寬度
-                    width = lbl.winfo_reqwidth() + 16  # 加上 padding 預估
+                    lbl = self.create_label(topic_row, name, cat, t=topic)
+                    lbl.pack(side="left", padx=8)
 
-                    if current_width + width > max_width:
-                        row_idx += 1
-                        col_idx = 0
-                        current_width = 0
-
-                    lbl.grid(row=row_idx, column=col_idx, sticky="w", padx=8, pady=2)
-                    col_idx += 1
-                    current_width += width
         self.build_action_buttons()
 
     def add_section_title(self, name):
