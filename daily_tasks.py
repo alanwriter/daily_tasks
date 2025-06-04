@@ -86,7 +86,7 @@ class TaskApp:
         container = tk.Frame(self.root, bg=BG_COLOR)
         container.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-10)
 
-        # 第一行（匯入／匯出）靠右上
+        # 第一行（匯入／匯出／回復）靠右上
         top_row = tk.Frame(container, bg=BG_COLOR)
         top_row.pack(anchor="e")
 
@@ -97,20 +97,21 @@ class TaskApp:
         def create_btn(parent, text, cmd):
             btn = tk.Button(
                 parent, text=text, command=cmd,
-                font=("標楷體", 12),  # 小一點
+                font=("標楷體", 12),
                 bg="#3a3a3a", fg="#ffffff",
                 relief="flat", padx=6, pady=4,
                 width=10, height=1
             )
             btn.is_action_button = True
-            btn.pack(side="right")  # 不加 padx → 無間隔
+            btn.pack(side="right")
             return btn
 
-        # 上行（靠右，匯出匯入）
+        # 上行（匯出、匯入、回復）←從右到左
         create_btn(top_row, "📤 匯出", self.export_tasks)
         create_btn(top_row, "📥 匯入", self.import_tasks)
+        create_btn(top_row, "🔙　回復", self.undo_last_task)  # 新增這一行
 
-        # 下行（靠右，其餘）
+        # 下行（其他）
         create_btn(bottom_row, "📊 回顧", self.show_weekly_summary)
         create_btn(bottom_row, "📝 編輯", self.toggle_edit_mode)
         create_btn(bottom_row, "✅ 紀錄", self.show_completed_tasks)
