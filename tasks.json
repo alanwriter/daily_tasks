@@ -138,19 +138,6 @@
       ]
     }
   },
-  "completed": [
-    {
-      "task": "加上回復鍵",
-      "category": "支線任務",
-      "topic": "程式改變生活",
-      "timestamp": "2025-06-05 00:10:26"
-    },
-    {
-      "task": "移動頁面",
-      "category": "支線任務",
-      "topic": "程式改變生活",
-      "timestamp": "2025-06-05 00:17:25"
-    }
-  ],
-  "last_reset": "2025-06-05"
+  "completed": [],
+  "last_reset": "2025-06-04"
 }

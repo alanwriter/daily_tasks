@@ -4,7 +4,7 @@
 
 import tkinter as tk
 from tkinter import simpledialog, filedialog, messagebox
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import json
 import os
 
@@ -39,17 +39,27 @@ def load_data():
             "completed": [],
             "last_reset": ""
         }
-    today = str(date.today())
-    if data.get("last_reset") != today:
+
+    # 使用早上 5:00 為換日基準
+    now = datetime.now()
+    switch_hour = 5
+    if now.hour < switch_hour:
+        effective_date = (now - timedelta(days=1)).date()
+    else:
+        effective_date = now.date()
+    effective_date_str = str(effective_date)
+
+    if data.get("last_reset") != effective_date_str:
         data["tasks"]["重複區"] = DEFAULT_REPEAT_TASKS.copy()
         data["completed"] = []
-        data["last_reset"] = today
+        data["last_reset"] = effective_date_str
 
+    # 轉換 legacy 突發區格式
     def convert_legacy_tasks(tasklist):
         newlist = []
         for t in tasklist:
             if isinstance(t, str):
-                newlist.append({"task": t, "created": today})
+                newlist.append({"task": t, "created": str(effective_date)})
             else:
                 newlist.append(t)
         return newlist
