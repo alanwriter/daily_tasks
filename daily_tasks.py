@@ -70,13 +70,26 @@ class TaskApp:
         self.root.title("🗓 每日任務管理器")
         self.root.configure(bg=BG_COLOR)
         self.root.geometry("1200x800")
+
+        # 新增 Scrollable Frame 架構
+        self.canvas = tk.Canvas(self.root, bg=BG_COLOR, highlightthickness=0)
+        self.scrollable_frame = tk.Frame(self.canvas, bg=BG_COLOR)
+
+        self.scrollable_window = self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
+        self.scrollable_frame.bind("<Configure>", lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
+
+        self.canvas.pack(fill="both", expand=True)
+
+        # 綁定滑鼠滾輪
+        self.canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+
         self.data = load_data()
         self.labels = []
         self.undo_stack = []
         self.edit_mode = False
         self.build_ui()
         self.root.bind("<Configure>", self.on_resize)
-        
+
     def on_resize(self, event):
         for lbl in self.labels:
             parent_width = lbl.master.winfo_width()
@@ -118,16 +131,14 @@ class TaskApp:
         create_btn(bottom_row, "➕ 任務", self.add_task_dialog)
 
     def build_ui(self):
-        for widget in self.root.winfo_children():
-            if getattr(widget, "is_action_button", False):
-                continue
+        for widget in self.scrollable_frame.winfo_children():
             widget.destroy()
         self.labels.clear()
 
         # 重複區
         for cat in ["重複區"]:
             self.add_section_title(cat)
-            row = tk.Frame(self.root, bg=BG_COLOR)
+            row = tk.Frame(self.scrollable_frame, bg=BG_COLOR)
             row.pack(anchor="w", padx=30, pady=2)
             for task in self.data["tasks"].get(cat, []):
                 label_text = task
@@ -137,12 +148,12 @@ class TaskApp:
                 lbl = self.create_label(row, label_text, cat)
                 lbl.pack(side="left", padx=8)
 
-        # 突發區 / 主線 / 支線（主題 + 子任務同一行）
+        # 突發區 / 主線 / 支線
         for cat in ["突發區", "主線任務", "支線任務"]:
             self.add_section_title(cat)
             groups = self.data["tasks"].get(cat, {})
             for topic, subtasks in groups.items():
-                topic_row = tk.Frame(self.root, bg=BG_COLOR)
+                topic_row = tk.Frame(self.scrollable_frame, bg=BG_COLOR)
                 topic_row.pack(anchor="w", padx=30, pady=4)
                 topic_lbl = tk.Label(topic_row, text=f"{topic}：", font=FONT_BOLD, bg=BG_COLOR, fg=TOPIC_COLOR, cursor="hand2")
                 topic_lbl.pack(side="left")
@@ -152,13 +163,15 @@ class TaskApp:
                     name = sub["task"] if isinstance(sub, dict) else sub
                     lbl = self.create_label(topic_row, name, cat, t=topic)
                     lbl.pack(side="left", padx=8)
-
         self.build_action_buttons()
 
     def add_section_title(self, name):
-        title = tk.Label(self.root, text=f"\n--- {name} ---", font=("標楷體", 16, "bold"), bg=BG_COLOR, fg=FG_COLOR)
+        title = tk.Label(self.scrollable_frame, text=f"\n--- {name} ---", font=("標楷體", 16, "bold"), bg=BG_COLOR, fg=FG_COLOR)
         title.pack(anchor="w", padx=20)
-
+    
+    def _on_mousewheel(self, event):
+        self.canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+    
     def create_label(self, parent, task, category, t=None):
         fg = EDIT_COLOR if self.edit_mode else FG_COLOR
         lbl = tk.Label(
