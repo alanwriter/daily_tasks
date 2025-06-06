@@ -1,10 +1,7 @@
-# main.py - 完整每日任務管理器 with 重複區未完成提醒 + 突發區回顧功能
-# 請搭配格式正確的 tasks.json 或 t_converted.json 一起使用
-# 使用 Python 3 + tkinter
-
 import tkinter as tk
 from tkinter import simpledialog, filedialog, messagebox
 from datetime import datetime, date, timedelta
+from task_add_window import TaskAddWindow
 import json
 import os
 
@@ -301,24 +298,22 @@ class TaskApp:
         self.build_ui()
 
     def add_task_dialog(self):
-        category_map = {"1": "重複區", "2": "突發區", "3": "主線任務", "4": "支線任務"}
-        cat_input = simpledialog.askstring("新增任務", "輸入分類：\n1.重複區\n2.突發區\n3.主線任務\n4.支線任務")
-        if cat_input not in category_map:
-            return
-        cat = category_map[cat_input]
-        topic = simpledialog.askstring("主題名稱", "輸入主題（可選）：")
-        task = simpledialog.askstring("任務內容", "輸入任務：")
-        if not task:
-            return
-        if cat in ["主線任務", "支線任務", "突發區"]:
-            self.data["tasks"][cat].setdefault(topic or "未分類", []).append({
-                "task": task,
-                "created": str(date.today())
-            })
-        else:
-            self.data["tasks"][cat].append(task)
-        save_data(self.data)
-        self.build_ui()
+        def on_submit(category, topic, task):
+            if category in ["主線任務", "支線任務", "突發區"]:
+                self.data["tasks"][category].setdefault(topic or "未分類", []).append({
+                    "task": task,
+                    "created": str(date.today())
+                })
+            else:
+                self.data["tasks"][category].append(task)
+            save_data(self.data)
+            self.build_ui()
+
+        TaskAddWindow(
+            self.root,
+            existing_data=self.data["tasks"],
+            on_submit=on_submit
+        )
 
     def toggle_edit_mode(self):
         self.edit_mode = not self.edit_mode
